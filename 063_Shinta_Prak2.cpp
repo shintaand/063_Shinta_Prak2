@@ -161,6 +161,28 @@ void loading() {
     file.close();
 }
 
+void enqueue(servis* baru) {
+    if (rear == NULL) {
+        front = rear = baru;
+    } else {
+        rear->next = baru;
+        rear = baru;
+    }
+}
+
+servis* dequeue() {
+    if (front == NULL) return NULL;
+
+    servis* temp = front;
+    front = front->next;
+
+    if (front == NULL) {
+        rear = NULL;
+    }
+    
+    temp->next = NULL;
+    return temp;
+}
 
 void tambahservis() {
     string nama, mod, mer, ken, mon, tanggal;
@@ -192,11 +214,10 @@ void tambahservis() {
     baru->nomor_p = pel->nomor;
     baru->next = NULL;
 
-    if (rear == NULL) front = rear = baru;
-    else { rear->next = baru; rear = baru; }
+    enqueue(baru);
 
     simpanantrian();
-    cout << "\nPelanggan telah terdaftar dan servis berhasil dicatat di antrian.\n";
+    cout << "\nBerhasil masuk antrian" << endl;
     cout << "Tekan Enter untuk kembali..."; cin.get();
 }
 
@@ -204,49 +225,28 @@ void tambahservis() {
 void selesaikan() {
     if (front == NULL) { cout << "Antrian kosong.\n"; return; }
 
-    cout << "\n=== SELESAIKAN PEKERJAAN ===\nPilih Montir!\n";
-    servis* temp_s = front;
-    string listM[100]; int count = 0;
-    while(temp_s != NULL) {
-        bool exist = false;
-        int i = 0;
-        while(i < count) { 
-            if(listM[i] == temp_s->montir) exist = true; 
-            i++; 
+    servis* target = front; 
+
+    cout << "\n=== SELESAIKAN PEKERJAAN ===\n";
+    cout << "Nama Pelanggan: " << target->nama_p;
+    cout << "\nModel Mobil: " << target->model;
+    cout << "\nMerek Mobil: " << target->merek;
+    cout << "\nMontir: " << target->montir << endl;
+    cout << "Selesaikan sekarang? (y/n): ";
+    string opt; getline(cin, opt);
+
+    if (opt == "y") {
+        servis* selesai = dequeue();
+
+        pelanggan* pel = caripelanggan(selesai->nama_p);
+        if (pel) {
+            selesai->next = pel->riwayatservis;
+            pel->riwayatservis = selesai;
         }
-        if(!exist) listM[count++] = temp_s->montir;
-        temp_s = temp_s->next;
-    }
 
-    int j = 0;
-    while(j < count) { cout << j+1 << ". " << listM[j] << endl; j++; }
-    
-    int p_input; cout << "Pilihan: "; cin >> p_input; cin.ignore();
-    if(p_input < 1 || p_input > count) return;
-    string target = listM[p_input-1];
-
-    servis* curr = front; servis* prev = NULL;
-    while (curr != NULL && curr->montir != target) {
-        prev = curr;
-        curr = curr->next;
-    }
-
-    if (curr != NULL) {
-        cout << "=== Service ===\nModel: " << curr->model << "\nKendala: " << curr->kendala << "\nPelanggan: " << curr->nama_p << endl;
-        cout << "Apakah servis ini sudah selesai?(y/n): ";
-        string opt; getline(cin, opt);
-        if (opt == "y") {
-            if (prev == NULL) front = curr->next;
-            else prev->next = curr->next;
-            if (curr == rear) rear = prev;
-
-            pelanggan* pel = caripelanggan(curr->nama_p);
-            curr->next = pel->riwayatservis;
-            pel->riwayatservis = curr;
-            
-            simpan(); 
-            cout << "Pekerjaan selesai dan dipindahkan ke riwayat.\n";
-        }
+        simpan(); 
+        simpanantrian();
+        cout << "Pekerjaan sudah selesai dan masuk ke Riwayat.\n";
     }
 }
 
