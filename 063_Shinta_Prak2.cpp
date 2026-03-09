@@ -74,11 +74,14 @@ void loadingantrian() {
 
     string line;
     while (getline(file, line)) {
+        if (line.empty()) continue;
+
         stringstream ss(line);
-        string nama, nomor, mod, mer, ken, mon, tanggal;
+        string nama, nomor, alamat, mod, mer, ken, mon, tanggal;
 
         getline(ss, nama, ',');
         getline(ss, nomor, ',');
+        getline(ss, alamat, ',');
         getline(ss, mod, ',');
         getline(ss, mer, ',');
         getline(ss, ken, ',');
@@ -86,20 +89,27 @@ void loadingantrian() {
         getline(ss, tanggal, ',');
 
         if (nama == "") continue;
+
         servis* baru = new servis;
+        baru->nama_p = nama;
+        baru->nomor_p = nomor;
         baru->model = mod;
         baru->merek = mer;
         baru->kendala = ken;
         baru->montir = mon;
         baru->tanggal = tanggal;
-        baru->nama_p = nama;
-        baru->nomor_p = nomor;
         baru->next = NULL;
-       
-        if (rear == NULL) front = rear = baru;
-        else { rear->next = baru; rear = baru; }
 
-        if (caripelanggan(nama) == NULL){}
+        if (rear == NULL) {
+            front = rear = baru;
+        } else {
+            rear->next = baru;
+            rear = baru;
+        }
+
+        if (caripelanggan(nama) == NULL) {
+            tambahpelanggan(nama, "", nomor); 
+        }
     }
     file.close();
 }
@@ -482,6 +492,7 @@ void riwayatservisanda () {
 
 int main() {
     loading();
+    loadingantrian();
     string pilihan;
     do {
         cout << "\n=== SELAMAT DATANG DI UNOSERVIS ===\n";
